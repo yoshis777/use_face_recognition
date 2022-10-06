@@ -1,4 +1,5 @@
 import os
+import pprint
 import shutil
 import face_recognition
 
@@ -13,9 +14,10 @@ def encode_files(filenames):
         try:
             encoded_files.append(face_recognition.face_encodings(face_recognition.load_image_file(filename))[0])
         except IndexError:
-            File.move_file(os.path.join(os.environ['UNIDENTIFIED_FOLDER']),
-                           filename,
-                           'cannot find faces in')
+            known_name = File.get_containing_dirname(filename)
+            File.move_file(filename,
+                           os.path.join(os.environ['KNOWN_UNIDENTIFIED_FOLDER'], known_name),
+                           'known but cannot find faces in')
     return encoded_files
 
 
@@ -24,11 +26,11 @@ class Recognizer:
         pass
 
     def compare(self):
-        known_filenames = File.get_filenames(os.path.join(os.environ['KNOWN_FOLDER'], os.environ['TARGET_EXT']))
+        known_filenames = File.get_filenames_containing_subdir(os.path.join(os.environ['SORTED_FOLDER']))
         unknown_filenames = File.get_filenames(os.path.join(os.environ['UNKNOWN_FOLDER'], os.environ['TARGET_EXT']))[
                             :int(os.environ['PROCESSING_NUM'])]
-        print(known_filenames)
-        print(unknown_filenames)
+        pprint.pprint(known_filenames)
+        pprint.pprint(unknown_filenames)
 
         known_faces = encode_files(known_filenames)
 
@@ -36,8 +38,8 @@ class Recognizer:
             try:
                 return face_recognition.face_encodings(face_recognition.load_image_file(filename))[0]
             except IndexError:
-                File.move_file(os.path.join(os.environ['UNIDENTIFIED_FOLDER']),
-                               filename,
+                File.move_file(filename,
+                               os.path.join(os.environ['UNIDENTIFIED_FOLDER']),
                                'cannot find faces in')
                 return None
         unknown_faces = list(map(encode_file, unknown_filenames))
@@ -51,8 +53,7 @@ class Recognizer:
                                    os.path.join(os.path.join(os.environ['THRESHOLD_FOLDER'])),
                                    'out of threshold')
                 else:
-                    recognized_name = File.extract_filename(known_filenames[min_index])
+                    recognized_name = File.get_containing_dirname(known_filenames[min_index])
                     File.move_file(unknown_filenames[index],
-                                   os.path.join(os.environ['SORTING_FOLDER'],
-                                                Util.delete_filename_num(recognized_name)),
+                                   os.path.join(os.environ['SORTED_FOLDER'], recognized_name),
                                    'ok ' + recognized_name + ' ')
