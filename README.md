@@ -19,3 +19,6 @@ THRESHOLD_FOLDER=（下記で顔識別ができなかった画像の移動先）
 
 THRESHOLD=0.45(顔判別をどれだけ厳しくするか。小さいほど厳しくなる。0.0~1.0まで)
 ```
+#### v0.9
+以下の使い方を踏襲  
+https://github.com/ageitgey/face_recognition#usage
