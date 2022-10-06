@@ -12,13 +12,18 @@ TARGET_EXT=*.jpg（対象となる画像の拡張子）
 
 KNOWN_FOLDER=（判定したい人物を格納するフォルダパス）
 UNKNOWN_FOLDER=（判定対象となる画像を格納するフォルダパス）
-SORTING_FOLDER=（実行後、判定されて分類された画像を格納するフォルダパス）
+SORTED_FOLDER=（実行後、判定されて分類された画像を格納するフォルダパス）
 
 UNIDENTIFIED_FOLDER=（顔検出自体ができたい画像の移動先）
 THRESHOLD_FOLDER=（下記で顔識別ができなかった画像の移動先）
 
 THRESHOLD=0.45(顔判別をどれだけ厳しくするか。小さいほど厳しくなる。0.0~1.0まで)
 ```
+
 #### v0.9
 以下の使い方を踏襲  
 https://github.com/ageitgey/face_recognition#usage
+
+#### v1.0
+0. 先にいくつかの画像をsortedフォルダに入れておく
+1. sortedフォルダを学習対象として、unkwownフォルダの画像を組み分けていく
