@@ -1,35 +1,22 @@
 import os
-import re
 import shutil
-
 import face_recognition
 
 from file import File
+from util import Util
 
 
 def encode_files(filenames):
+    # エンコード後のファイルが多次元配列で、filter関数でNoneを削除できないため、Noneを格納せず追加する
     encoded_files = []
     for filename in filenames:
         try:
             encoded_files.append(face_recognition.face_encodings(face_recognition.load_image_file(filename))[0])
         except IndexError:
-            print('except encoding: ' + filename)
+            File.move_file(os.path.join(os.environ['UNIDENTIFIED_FOLDER']),
+                           filename,
+                           'cannot find faces in')
     return encoded_files
-
-
-def get_min_index(target_list):
-    min_value = min(target_list)
-    if min_value >= float(os.environ['THRESHOLD']):
-        return None
-    return list(target_list).index(min_value)
-
-
-def delete_filename_num(filename):
-    m = re.search(r'(?P<FILENAME>.*)\(\d+\)', filename)
-    if m is None:
-        return filename
-    else:
-        return m.group('FILENAME').rstrip()
 
 
 class Recognizer:
@@ -38,7 +25,8 @@ class Recognizer:
 
     def compare(self):
         known_filenames = File.get_filenames(os.path.join(os.environ['KNOWN_FOLDER'], os.environ['TARGET_EXT']))
-        unknown_filenames = File.get_filenames(os.path.join(os.environ['UNKNOWN_FOLDER'], os.environ['TARGET_EXT']))[:30]
+        unknown_filenames = File.get_filenames(os.path.join(os.environ['UNKNOWN_FOLDER'], os.environ['TARGET_EXT']))[
+                            :int(os.environ['PROCESSING_NUM'])]
         print(known_filenames)
         print(unknown_filenames)
 
@@ -48,25 +36,23 @@ class Recognizer:
             try:
                 return face_recognition.face_encodings(face_recognition.load_image_file(filename))[0]
             except IndexError:
-                target_path = os.path.join(os.environ['UNIDENTIFIED_FOLDER'])
-                os.makedirs(target_path, exist_ok=True)
-                shutil.move(filename, target_path)
-                print('cannot find face in: ' + filename)
+                File.move_file(os.path.join(os.environ['UNIDENTIFIED_FOLDER']),
+                               filename,
+                               'cannot find faces in')
                 return None
         unknown_faces = list(map(encode_file, unknown_filenames))
 
         for index, face in enumerate(unknown_faces):
             if face is not None:
                 results = face_recognition.face_distance(known_faces, face)
-                min_index = get_min_index(results)
-                if min_index is not None:
-                    print('ok: ' + unknown_filenames[index])
-                    recognized_name = File.extract_filename(known_filenames[min_index])
-                    target_path = os.path.join(os.environ['SORTING_FOLDER'], delete_filename_num(recognized_name))
-                    os.makedirs(target_path, exist_ok=True)
-                    shutil.move(unknown_filenames[index], target_path)
+                min_index = Util.get_min_index(results)
+                if min_index is None:
+                    File.move_file(unknown_filenames[index],
+                                   os.path.join(os.path.join(os.environ['THRESHOLD_FOLDER'])),
+                                   'out of threshold')
                 else:
-                    print('out of threshold: ' + unknown_filenames[index])
-                    target_path = os.path.join(os.environ['THRESHOLD_FOLDER'])
-                    os.makedirs(target_path, exist_ok=True)
-                    shutil.move(unknown_filenames[index], target_path)
+                    recognized_name = File.extract_filename(known_filenames[min_index])
+                    File.move_file(unknown_filenames[index],
+                                   os.path.join(os.environ['SORTING_FOLDER'],
+                                                Util.delete_filename_num(recognized_name)),
+                                   'ok ' + recognized_name + ' ')

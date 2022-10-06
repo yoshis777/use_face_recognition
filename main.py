@@ -11,14 +11,9 @@ from recognizer import Recognizer
 def main():
     load_dotenv()
 
+    print('移動前ファイル数: ' + str(File.count_files_in_dest_folder()))
     Recognizer().compare()
-
-    # dir = ''
-    # dir2 = ''
-    #
-    # p_temp = pathlib.Path(dir)
-    # p_temp2 = pathlib.Path(dir2)
-    # print(len(list(p_temp.glob('**/*.jpg'))) - len(list(p_temp2.glob('**/*.jpg'))))
+    print('移動後ファイル数: ' + str(File.count_files_in_dest_folder()))
 
 
 main()
