@@ -29,7 +29,6 @@ class Recognizer:
         known_filenames = File.get_filenames_containing_subdir(os.path.join(os.environ['SORTED_FOLDER']))
         unknown_filenames = File.get_filenames(os.path.join(os.environ['UNKNOWN_FOLDER'], os.environ['TARGET_EXT']))[
                             :int(os.environ['PROCESSING_NUM'])]
-        pprint.pprint(known_filenames)
         pprint.pprint(unknown_filenames)
 
         known_faces = encode_files(known_filenames)
